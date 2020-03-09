@@ -12,6 +12,7 @@ namespace PlagueIncAlgorithm
         public static Dictionary<string, Dictionary<string, float>> connectedCityList = new Dictionary<string, Dictionary<string, float>>();
         public static Dictionary<string, bool> visited = new Dictionary<string, bool>();
         public static Dictionary<string, int> dayCityGotInfected = new Dictionary<string, int>();
+        public static Dictionary<string, List<string>> cityInfectsOthers = new Dictionary<string, List<string>>();
 
         // AddConnectedCity()
         // Adds the connection from {sourceCity} to {targetCity} with weight = {weight} to the dictionary {connectedCityList}
@@ -85,7 +86,7 @@ namespace PlagueIncAlgorithm
 
             return (spreadChance > 1);
         }
-        public static void BFS(string startingCity, Dictionary<string, bool> visited, Dictionary<string, Dictionary<string, float>> connectedCityList, Dictionary<string, int> cityPopulationList, List<string> result, int totalDays)
+        public static void BFS(string startingCity, Dictionary<string, bool> visited, Dictionary<string, Dictionary<string, float>> connectedCityList, Dictionary<string, int> cityPopulationList, List<string> result, int totalDays, Dictionary<string, List<String>> cityInfectsOthers)
         {
             Queue<string> bfsQueue = new Queue<string>();
             Dictionary<string, int> dayCityGotInfected = new Dictionary<string, int>(); // To keep track of the start day when a city got infected
@@ -97,10 +98,20 @@ namespace PlagueIncAlgorithm
                 string plaguedCity = bfsQueue.Peek();
                 visited[plaguedCity] = true;
                 bfsQueue.Dequeue();
+                if (!cityInfectsOthers.ContainsKey(plaguedCity))
+                {
+                    List<string> tempList = new List<string>();
+                    cityInfectsOthers.Add(plaguedCity, tempList);
+                }
+                    
                 foreach (KeyValuePair<string, float> adjacentCity in connectedCityList[plaguedCity])
                 {
                     if ((!visited[adjacentCity.Key]) && (IsSpread(plaguedCity, adjacentCity.Key, connectedCityList, cityPopulationList, dayCityGotInfected, totalDays)))
                     {
+                        
+                        
+                        cityInfectsOthers[plaguedCity].Add(adjacentCity.Key);
+                   
                         bfsQueue.Enqueue(adjacentCity.Key);
                         visited[adjacentCity.Key] = true;
                         result.Add(adjacentCity.Key);
@@ -140,12 +151,15 @@ namespace PlagueIncAlgorithm
             {
                 foreach (string inputLine in inputLines)
                 {
+                    // Console.WriteLine(inputLine);
                     string[] inputLineSplit;
                     float weight;
                     if (inputLine != inputLines[0])
                     {
                         inputLineSplit = inputLine.Split(' ');
-                        float.TryParse(inputLineSplit[2], out weight);
+                        // Console.WriteLine(inputLineSplit[2]);
+                        float.TryParse(inputLineSplit[2].Replace('.', ','), out weight);
+                        // Console.WriteLine(weight);
                         AddConnectedCity(inputLineSplit[0], inputLineSplit[1], weight, connectedCityList);
                         if (!visited.ContainsKey(inputLineSplit[0]))
                         {
@@ -198,10 +212,22 @@ namespace PlagueIncAlgorithm
                 }
             }
 
+            // Print List
+            Console.WriteLine("-----------------CITY CONNECTED LIST-----------------");
+            foreach(KeyValuePair<string, Dictionary<string, float>> connectedCity in connectedCityList) {
+                Console.WriteLine("City {0} to", connectedCity.Key);
+                foreach(KeyValuePair<string, float> city in connectedCity.Value) {
+                    Console.WriteLine("{0} => {1}", city.Key, city.Value);
+                }
+            }
+
             // TEST BFS
             int inputDays;
             inputDays = PlagueIncGUI.Form1.inputDays;
-            BFS("A", visited, connectedCityList, cityPopulationList, result, inputDays);
+            Console.WriteLine("Days as Input : {0}",inputDays);
+            BFS("A", visited, connectedCityList, cityPopulationList, result, inputDays, cityInfectsOthers);
+
+
             return result;
         }
     }
