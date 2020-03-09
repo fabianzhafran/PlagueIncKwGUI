@@ -37,6 +37,78 @@ namespace PlagueIncAlgorithm
             }
         }
 
+        public static Dictionary<string, int> readPopulationFile(string populationFile)
+        {
+            Dictionary<string, int> cityPopulationList = new Dictionary<string, int>();
+            string[] populationLines = { };
+            string startingCity = "";
+
+            if (cityPopulationList.Count == 0)
+            {
+                if (File.Exists(populationFile))
+                {
+                    populationLines = File.ReadAllLines(populationFile);
+                    startingCity = populationLines[0].Split(' ')[1];
+                    foreach (string populationLine in populationLines)
+                    {
+                        Console.WriteLine(populationLine);
+                        if (populationLine != populationLines[0])
+                        {
+                            string[] populationLineSplit = populationLine.Split(' ');
+                            if (visited.ContainsKey(populationLineSplit[0]))
+                            {
+                                int tempPopulation;
+                                int.TryParse(populationLineSplit[1], out tempPopulation);
+                                cityPopulationList.Add(populationLineSplit[0], tempPopulation);
+                                Console.WriteLine(tempPopulation);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return cityPopulationList;
+        }
+
+        public static Dictionary<string, Dictionary<string, float>> readInputFile(string inputFile)
+        {
+            Dictionary<string, Dictionary<string, float>> connectedCityList = new Dictionary<string, Dictionary<string, float>>();
+            string[] inputLines = { };
+            int cityLength = 0;
+            if (File.Exists(inputFile))
+            {
+                inputLines = File.ReadAllLines(inputFile);
+                int.TryParse(inputLines[0], out cityLength);
+            }
+            
+                foreach (string inputLine in inputLines)
+                {
+                    // Console.WriteLine(inputLine);
+                    string[] inputLineSplit;
+                    float weight;
+                    List<string> emptyList = new List<string>();
+                    if (inputLine != inputLines[0])
+                    {
+                        inputLineSplit = inputLine.Split(' ');
+                        // Console.WriteLine(inputLineSplit[2]);
+                        ;
+                        float.TryParse(inputLineSplit[2].Replace('.', ','), out weight);
+                        // Console.WriteLine(weight);
+                        AddConnectedCity(inputLineSplit[0], inputLineSplit[1], weight, connectedCityList);
+                        if (!visited.ContainsKey(inputLineSplit[0]))
+                        {
+                            visited.Add(inputLineSplit[0], false);
+                        }
+                        if (!visited.ContainsKey(inputLineSplit[1]))
+                        {
+                            visited.Add(inputLineSplit[1], false);
+                        }
+                    }
+                }
+            return connectedCityList;
+
+        }
+
 
         // Function for I(A, t(A))
         public static float InfectedPopulationInCity(string plaguedCity, Dictionary<string, int> cityPopulationList, Dictionary<string, int> dayCityGotInfected, int totalDays)
@@ -86,39 +158,69 @@ namespace PlagueIncAlgorithm
 
             return (spreadChance > 1);
         }
+
+      
         public static void BFS(string startingCity, Dictionary<string, bool> visited, Dictionary<string, Dictionary<string, float>> connectedCityList, Dictionary<string, int> cityPopulationList, List<string> result, int totalDays, Dictionary<string, List<String>> cityInfectsOthers)
         {
             Queue<string> bfsQueue = new Queue<string>();
             Dictionary<string, int> dayCityGotInfected = new Dictionary<string, int>(); // To keep track of the start day when a city got infected
+            bool dayLessThanTotal = true;
             bfsQueue.Enqueue(startingCity);
             dayCityGotInfected[startingCity] = 0;
             result.Add(startingCity);
-            while (bfsQueue.Count > 0)
+            while ((bfsQueue.Count > 0) && (dayLessThanTotal))
             {
                 string plaguedCity = bfsQueue.Peek();
                 visited[plaguedCity] = true;
                 bfsQueue.Dequeue();
-                if (!cityInfectsOthers.ContainsKey(plaguedCity))
+
+                if (cityInfectsOthers.ContainsKey(plaguedCity))
+                {
+                    //
+                } else
                 {
                     List<string> tempList = new List<string>();
                     cityInfectsOthers.Add(plaguedCity, tempList);
                 }
+                
                     
                 foreach (KeyValuePair<string, float> adjacentCity in connectedCityList[plaguedCity])
                 {
-                    if ((!visited[adjacentCity.Key]) && (IsSpread(plaguedCity, adjacentCity.Key, connectedCityList, cityPopulationList, dayCityGotInfected, totalDays)))
+                    if ((IsSpread(plaguedCity, adjacentCity.Key, connectedCityList, cityPopulationList, dayCityGotInfected, totalDays)))
                     {
                         
+                        if (!cityInfectsOthers[plaguedCity].Contains(adjacentCity.Key))
+                        {
+                            cityInfectsOthers[plaguedCity].Add(adjacentCity.Key);
+                        }
                         
-                        cityInfectsOthers[plaguedCity].Add(adjacentCity.Key);
                    
                         bfsQueue.Enqueue(adjacentCity.Key);
-                        visited[adjacentCity.Key] = true;
+                        
+                            
+                        
                         result.Add(adjacentCity.Key);
                         int dayAdjacentCityInfected = WhenCityGotInfected(plaguedCity, adjacentCity.Key, cityPopulationList, dayCityGotInfected, connectedCityList, totalDays);
-                        dayCityGotInfected.Add(adjacentCity.Key, dayAdjacentCityInfected + dayCityGotInfected[plaguedCity]); // Add an infected city to the dict
+                        if ((dayAdjacentCityInfected + dayCityGotInfected[plaguedCity]) > totalDays)
+                        {
+                            dayLessThanTotal = false;
+                            Console.Write("BREAK WOE BREAK");
+                            break;
+                        } else {
+                            if (!dayCityGotInfected.ContainsKey(adjacentCity.Key))
+                            {
+                                dayCityGotInfected.Add(adjacentCity.Key, dayAdjacentCityInfected + dayCityGotInfected[plaguedCity]); // Add an infected city to the dict
+                            } else
+                            {
+                                dayCityGotInfected[adjacentCity.Key] = dayAdjacentCityInfected + dayCityGotInfected[plaguedCity];
+                            }
 
-                        Console.WriteLine("City {0} got infected from city {1}!", adjacentCity.Key, plaguedCity);
+                            Console.WriteLine("{0}, {1}", dayAdjacentCityInfected + dayCityGotInfected[plaguedCity], totalDays);
+
+                            Console.WriteLine("City {0} got infected from city {1}!", adjacentCity.Key, plaguedCity);
+                        }
+                        
+                        
                     }
                 }
             }
@@ -128,89 +230,25 @@ namespace PlagueIncAlgorithm
                 Console.WriteLine("City {0} Infected Since Day: {1}", city.Key, city.Value);
             }
         }
-        public static List<string> PlagueIncResult()
+        public static Dictionary<string, List<string>> PlagueIncResult()
         {
             Console.WriteLine("~~~~~~~~~~~~~~~~");
             Console.WriteLine("Mulaigan");
             List<string> result = new List<string>();
-            string[] inputLines = { };
-            string[] populationLines = { };
-            int cityLength = 0;
-            string startingCity = "";
+            
+            
             //int amtOfCityConnected;
 
-            if (File.Exists(inputFile))
-            {
-                inputLines = File.ReadAllLines(inputFile);
-                int.TryParse(inputLines[0], out cityLength);
-            }
+
 
             // INPUT CONNECTED CITY
             // If already listed, then do nothing.
-            if (connectedCityList.Count == 0)
-            {
-                foreach (string inputLine in inputLines)
-                {
-                    // Console.WriteLine(inputLine);
-                    string[] inputLineSplit;
-                    float weight;
-                    if (inputLine != inputLines[0])
-                    {
-                        inputLineSplit = inputLine.Split(' ');
-                        // Console.WriteLine(inputLineSplit[2]);
-                        float.TryParse(inputLineSplit[2].Replace('.', ','), out weight);
-                        // Console.WriteLine(weight);
-                        AddConnectedCity(inputLineSplit[0], inputLineSplit[1], weight, connectedCityList);
-                        if (!visited.ContainsKey(inputLineSplit[0]))
-                        {
-                            visited.Add(inputLineSplit[0], false);
-                        }
-                        if (!visited.ContainsKey(inputLineSplit[1]))
-                        {
-                            visited.Add(inputLineSplit[1], false);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                try
-                {
-                    foreach (KeyValuePair<string, bool> visitedEl in visited)
-                    {
-                        visited[visitedEl.Key] = false;
-                    }
-                }
-                catch
-                {
-
-                }
-            }
+            connectedCityList = readInputFile(inputFile);
 
             // INPUT CITY POPULATION
-            if (cityPopulationList.Count == 0)
-            {
-                if (File.Exists(populationFile))
-                {
-                    populationLines = File.ReadAllLines(populationFile);
-                    startingCity = populationLines[0].Split(' ')[1];
-                    foreach (string populationLine in populationLines)
-                    {
-                        Console.WriteLine(populationLine);
-                        if (populationLine != populationLines[0])
-                        {
-                            string[] populationLineSplit = populationLine.Split(' ');
-                            if (visited.ContainsKey(populationLineSplit[0]))
-                            {
-                                int tempPopulation;
-                                int.TryParse(populationLineSplit[1], out tempPopulation);
-                                cityPopulationList.Add(populationLineSplit[0], tempPopulation);
-                                Console.WriteLine(tempPopulation);
-                            }
-                        }
-                    }
-                }
-            }
+            cityPopulationList = readPopulationFile(populationFile);
+
+            
 
             // Print List
             Console.WriteLine("-----------------CITY CONNECTED LIST-----------------");
@@ -228,7 +266,7 @@ namespace PlagueIncAlgorithm
             BFS("A", visited, connectedCityList, cityPopulationList, result, inputDays, cityInfectsOthers);
 
 
-            return result;
+            return cityInfectsOthers;
         }
     }
 }

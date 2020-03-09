@@ -57,11 +57,58 @@ namespace PlagueIncGUI
             bool tryParse = Int32.TryParse(InputDaysBox.Text, out inputDays);
             if (tryParse)
             {
-                List<string> resultList = PlagueIncAlgorithm.PlagueInc.PlagueIncResult();
-                foreach (string temp in resultList)
+                Dictionary<string, Dictionary<string, float>> cityConnectedList = PlagueIncAlgorithm.PlagueInc.readInputFile(Path.Combine(Environment.CurrentDirectory, "..\\..\\txt\\InputFile.txt"));
+                Dictionary<string, List<string>> cityInfectsOthers = PlagueIncAlgorithm.PlagueInc.PlagueIncResult();
+                foreach (KeyValuePair<string, List<string>> infectionDict in cityInfectsOthers)
                 {
-                    resultText = resultText + " - " + temp;
+                    resultText = resultText + " - " + infectionDict.Key;
                 }
+
+                Microsoft.Msagl.GraphViewerGdi.GViewer viewer = new Microsoft.Msagl.GraphViewerGdi.GViewer();
+                //create a graph object 
+                Microsoft.Msagl.Drawing.Graph graph = new Microsoft.Msagl.Drawing.Graph("graph");
+                //create the graph content 
+                
+
+                foreach(KeyValuePair<string, List<string>> infectionDict in cityInfectsOthers)
+                {
+                    foreach(string victimCity in infectionDict.Value)
+                    {
+                        graph.AddEdge(infectionDict.Key, victimCity).Attr.Color = Microsoft.Msagl.Drawing.Color.Red;
+                        graph.FindNode(infectionDict.Key).Attr.FillColor = Microsoft.Msagl.Drawing.Color.Red;
+                        graph.FindNode(victimCity).Attr.FillColor = Microsoft.Msagl.Drawing.Color.Red;
+                    }
+                }
+
+                foreach (KeyValuePair<string, Dictionary<string, float>> connectionDict in cityConnectedList)
+                {
+                    foreach (KeyValuePair<string, float> targetCity in connectionDict.Value)
+                    {
+                        
+                        if (!((cityInfectsOthers.ContainsKey(connectionDict.Key)) && (cityInfectsOthers[connectionDict.Key].Contains(targetCity.Key))))
+                        {
+                            graph.AddEdge(connectionDict.Key, targetCity.Key);
+                        }   
+                        graph.FindNode(connectionDict.Key).Attr.Shape = Microsoft.Msagl.Drawing.Shape.Circle;
+                        graph.FindNode(targetCity.Key).Attr.Shape = Microsoft.Msagl.Drawing.Shape.Circle;
+                    }
+                }
+                // graph.AddEdge("A", "B");
+                // graph.AddEdge("B", "C");
+                // graph.AddEdge("A", "C").Attr.Color = Microsoft.Msagl.Drawing.Color.Green;
+                // graph.FindNode("A").Attr.FillColor = Microsoft.Msagl.Drawing.Color.Magenta;
+                // graph.FindNode("B").Attr.FillColor = Microsoft.Msagl.Drawing.Color.MistyRose;
+                // Microsoft.Msagl.Drawing.Node c = graph.FindNode("C");
+                // c.Attr.FillColor = Microsoft.Msagl.Drawing.Color.PaleGreen;
+                // c.Attr.Shape = Microsoft.Msagl.Drawing.Shape.Diamond;
+                //bind the graph to the viewer 
+                viewer.Graph = graph;
+                //associate the viewer with the form 
+                this.SuspendLayout();
+                viewer.Dock = System.Windows.Forms.DockStyle.Fill;
+                this.Controls.Add(viewer);
+                this.ResumeLayout();
+                
             }
             else
             {
