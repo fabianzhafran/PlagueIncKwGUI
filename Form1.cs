@@ -42,7 +42,7 @@ namespace PlagueIncGUI
         private void Form1_Load(object sender, EventArgs e)
         {
 
-            InputDaysBox.Height = 100;
+            InputDaysBox.Height = 200;
             InputDaysBox.Width = 100;
         }
 
@@ -57,41 +57,62 @@ namespace PlagueIncGUI
             bool tryParse = Int32.TryParse(InputDaysBox.Text, out inputDays);
             if (tryParse)
             {
+                
                 Dictionary<string, Dictionary<string, float>> cityConnectedList = PlagueIncAlgorithm.PlagueInc.readInputFile(Path.Combine(Environment.CurrentDirectory, "..\\..\\txt\\InputFile.txt"));
-                Dictionary<string, List<string>> cityInfectsOthers = PlagueIncAlgorithm.PlagueInc.PlagueIncResult();
-                foreach (KeyValuePair<string, List<string>> infectionDict in cityInfectsOthers)
-                {
-                    resultText = resultText + " - " + infectionDict.Key;
-                }
-
+                List<string> cityInfectsOthers = PlagueIncAlgorithm.PlagueInc.PlagueIncResult();
+             
+                //foreach (KeyValuePair<string, List<string>> infectionDict in cityInfectsOthers)
+                //{
+                  //  resultText = resultText + " - " + infectionDict.Key;
+                //}
                 Microsoft.Msagl.GraphViewerGdi.GViewer viewer = new Microsoft.Msagl.GraphViewerGdi.GViewer();
                 //create a graph object 
                 Microsoft.Msagl.Drawing.Graph graph = new Microsoft.Msagl.Drawing.Graph("graph");
                 //create the graph content 
-                
 
-                foreach(KeyValuePair<string, List<string>> infectionDict in cityInfectsOthers)
+                int countInfectionRoute = 0;
+                foreach (string cityInfects in cityInfectsOthers)
                 {
-                    foreach(string victimCity in infectionDict.Value)
+                    countInfectionRoute++;
+                    string[] cityInfectsSplit;
+                    cityInfectsSplit = cityInfects.Split(' ');
+                    resultText = resultText + cityInfectsSplit[0] + "=>" + cityInfectsSplit[1];
+                    if (countInfectionRoute % 2 == 0)
                     {
-                        graph.AddEdge(infectionDict.Key, victimCity).Attr.Color = Microsoft.Msagl.Drawing.Color.Red;
-                        graph.FindNode(infectionDict.Key).Attr.FillColor = Microsoft.Msagl.Drawing.Color.Red;
-                        graph.FindNode(victimCity).Attr.FillColor = Microsoft.Msagl.Drawing.Color.Red;
+                        resultText = resultText + "\n";
+                    } else
+                    {
+                        resultText = resultText + " | ";
                     }
+                    
+
+                    graph.AddEdge(cityInfectsSplit[0], cityInfectsSplit[1]).Attr.Color = Microsoft.Msagl.Drawing.Color.Red;
+                    graph.FindNode(cityInfectsSplit[0]).Attr.FillColor = Microsoft.Msagl.Drawing.Color.Red;
+                    graph.FindNode(cityInfectsSplit[1]).Attr.FillColor = Microsoft.Msagl.Drawing.Color.Red;
+
+                    cityConnectedList[cityInfectsSplit[0]].Remove(cityInfectsSplit[1]);
                 }
+
+                //foreach(KeyValuePair<string, List<string>> infectionDict in cityInfectsOthers)
+                //{
+                //foreach(string victimCity in infectionDict.Value)
+                //{
+                //graph.AddEdge(infectionDict.Key, victimCity).Attr.Color = Microsoft.Msagl.Drawing.Color.Red;
+                //graph.FindNode(infectionDict.Key).Attr.FillColor = Microsoft.Msagl.Drawing.Color.Red;
+                //graph.FindNode(victimCity).Attr.FillColor = Microsoft.Msagl.Drawing.Color.Red;
+                //}
+                //}
 
                 foreach (KeyValuePair<string, Dictionary<string, float>> connectionDict in cityConnectedList)
                 {
-                    foreach (KeyValuePair<string, float> targetCity in connectionDict.Value)
                     {
-                        
-                        if (!((cityInfectsOthers.ContainsKey(connectionDict.Key)) && (cityInfectsOthers[connectionDict.Key].Contains(targetCity.Key))))
+                        foreach (KeyValuePair<string, float> targetCity in connectionDict.Value)
                         {
+
                             graph.AddEdge(connectionDict.Key, targetCity.Key);
-                        }   
-                        graph.FindNode(connectionDict.Key).Attr.Shape = Microsoft.Msagl.Drawing.Shape.Circle;
-                        graph.FindNode(targetCity.Key).Attr.Shape = Microsoft.Msagl.Drawing.Shape.Circle;
+                        }
                     }
+                    graph.FindNode(connectionDict.Key).Attr.Shape = Microsoft.Msagl.Drawing.Shape.Circle;
                 }
                 // graph.AddEdge("A", "B");
                 // graph.AddEdge("B", "C");
@@ -108,6 +129,8 @@ namespace PlagueIncGUI
                 viewer.Dock = System.Windows.Forms.DockStyle.Fill;
                 this.Controls.Add(viewer);
                 this.ResumeLayout();
+
+                
                 
             }
             else
