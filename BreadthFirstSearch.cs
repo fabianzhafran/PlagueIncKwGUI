@@ -174,21 +174,12 @@ namespace PlagueIncAlgorithm
                 visited[plaguedCity] = true;
                 bfsQueue.Dequeue();
 
-                
-                
-                    
                 foreach (KeyValuePair<string, float> adjacentCity in connectedCityList[plaguedCity])
                 {
                     if ((IsSpread(plaguedCity, adjacentCity.Key, connectedCityList, cityPopulationList, dayCityGotInfected, totalDays)))
                     {
-
                         cityInfectsOthers.Add(plaguedCity + " " + adjacentCity.Key);
-                        
-                   
                         bfsQueue.Enqueue(adjacentCity.Key);
-                        
-                            
-                        
                         result.Add(adjacentCity.Key);
                         int dayAdjacentCityInfected = WhenCityGotInfected(plaguedCity, adjacentCity.Key, cityPopulationList, dayCityGotInfected, connectedCityList, totalDays);
                         if ((dayAdjacentCityInfected + dayCityGotInfected[plaguedCity]) > totalDays)
@@ -209,12 +200,10 @@ namespace PlagueIncAlgorithm
 
                             Console.WriteLine("City {0} got infected from city {1}!", adjacentCity.Key, plaguedCity);
                         }
-                        
-                        
+                       
                     }
                 }
             }
-
             foreach (KeyValuePair<string, int> city in dayCityGotInfected)
             {
                 Console.WriteLine("City {0} Infected Since Day: {1}", city.Key, city.Value);
@@ -226,19 +215,12 @@ namespace PlagueIncAlgorithm
             Console.WriteLine("Mulaigan");
             List<string> result = new List<string>();
             
-            
-            //int amtOfCityConnected;
-
-
-
             // INPUT CONNECTED CITY
             // If already listed, then do nothing.
             connectedCityList = readInputFile(inputFile);
 
             // INPUT CITY POPULATION
             cityPopulationList = readPopulationFile(populationFile);
-
-            
 
             // Print List
             Console.WriteLine("-----------------CITY CONNECTED LIST-----------------");
@@ -256,7 +238,6 @@ namespace PlagueIncAlgorithm
             Console.WriteLine("Days as Input : {0}",inputDays);
             startingCity = File.ReadAllLines(populationFile)[0].Split(' ')[1];
             BFS(startingCity, visited, connectedCityList, cityPopulationList, result, inputDays, cityInfectsOthers);
-
 
             return cityInfectsOthers;
         }
