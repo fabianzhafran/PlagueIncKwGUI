@@ -29,10 +29,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.LabelTest = new System.Windows.Forms.Label();
             this.ResultTitle = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -40,7 +38,6 @@
             this.label5 = new System.Windows.Forms.Label();
             this.InputDaysBox = new PlagueIncKW.round();
             this.button_WOC1 = new ePOSOne.btnProduct.Button_WOC();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // LabelTest
@@ -66,16 +63,6 @@
             this.ResultTitle.Size = new System.Drawing.Size(264, 58);
             this.ResultTitle.TabIndex = 1;
             this.ResultTitle.Text = "Plague Result :";
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(306, -4);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(188, 683);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-            this.pictureBox1.TabIndex = 5;
-            this.pictureBox1.TabStop = false;
             // 
             // label1
             // 
@@ -186,13 +173,11 @@
             this.Controls.Add(this.button_WOC1);
             this.Controls.Add(this.ResultTitle);
             this.Controls.Add(this.LabelTest);
-            this.Controls.Add(this.pictureBox1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -204,7 +189,6 @@
         private System.Windows.Forms.Label ResultTitle;
         private ePOSOne.btnProduct.Button_WOC button_WOC1;
         private PlagueIncKW.round InputDaysBox;
-        private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
