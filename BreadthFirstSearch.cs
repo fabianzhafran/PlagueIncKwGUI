@@ -159,7 +159,7 @@ namespace PlagueIncAlgorithm
             bool dayLessThanTotal = true;
             bfsQueue.Enqueue(startingCity);
             dayCityGotInfected[startingCity] = 0;
-            while ((bfsQueue.Count > 0) && (dayLessThanTotal))
+            while (bfsQueue.Count > 0)
             {
                 string plaguedCity = bfsQueue.Peek();
                 bfsQueue.Dequeue();
@@ -173,13 +173,14 @@ namespace PlagueIncAlgorithm
                             cityInfectsOthers.Add(infectRoute);
                         }
                         
-                        bfsQueue.Enqueue(adjacentCity.Key);
+                        
                         int dayAdjacentCityInfected = WhenCityGotInfected(plaguedCity, adjacentCity.Key, cityPopulationList, dayCityGotInfected, connectedCityList, totalDays);
                         if ((dayAdjacentCityInfected + dayCityGotInfected[plaguedCity]) > totalDays)
                         {
-                            dayLessThanTotal = false;
+                            ///dayLessThanTotal = false;
                             break;
                         } else {
+                            bfsQueue.Enqueue(adjacentCity.Key);
                             if (!dayCityGotInfected.ContainsKey(adjacentCity.Key))
                             {
                                 dayCityGotInfected.Add(adjacentCity.Key, dayAdjacentCityInfected + dayCityGotInfected[plaguedCity]); // Add an infected city to the dict
